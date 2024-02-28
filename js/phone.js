@@ -1,21 +1,14 @@
-const loadPhone = async (searchText) => {
+const loadPhone = async (searchText, isShowAll) => {
     const res = await fetch(`https://openapi.programming-hero.com/api/phones?search=${searchText}`);
     const data = await res.json();
     const phones = data.data;
 
     // console.log(phones);
-    displayPhones(phones);
+    displayPhones(phones, isShowAll);
 }
 
-// handle search button
-const handleSearch = () => {
-    const searchField = document.getElementById('search-field');
-    const searchText = searchField.value;
-    loadPhone(searchText);
-
-}
-
-const displayPhones = phones => {
+// display Phone
+const displayPhones = (phones, isShowAll) => {
 
     // console.log(phones);
     const phoneContainer = document.getElementById('phone-container');
@@ -23,8 +16,22 @@ const displayPhones = phones => {
     // clear phone container cards before adding new cards
     phoneContainer.textContent = '';
 
+    // Show all phone
+    const showAllContainer = document.getElementById('show-all-container');
+    if (phones.length > 12 && !isShowAll) {
+        showAllContainer.classList.remove('hidden');
+    }
+    else {
+        showAllContainer.classList.add('hidden');
+    }
+
+    // display few phone if not show all
+    if (!isShowAll) {
+        phones = phones.slice(0, 12);
+    }
+
     phones.forEach(phone => {
-        console.log(phone);
+        // console.log(phone);
         const phoneCard = document.createElement('div');
         phoneCard.classList = `card bg-gray-100 p-4 shadow-xl`;
         phoneCard.innerHTML = `
@@ -33,13 +40,50 @@ const displayPhones = phones => {
         <div class="card-body">
             <h2 class="card-title">${phone.phone_name}</h2>
             <p>If a dog chews shoes whose shoes does he choose?</p>
-            <div class="card-actions justify-end">
-                <button class="btn btn-primary">Buy Now</button>
+            <div class="card-actions justify-center">
+                <button onclick="handleShowDetails('${phone.slug}')" class="btn btn-primary">Show Details</button>
             </div>
         </div>
         `;
         phoneContainer.appendChild(phoneCard);
     });
+
+    // hide loader
+    toggleLoadingSpinner(false);
+}
+
+// handle search button
+const handleSearch = (isShowAll) => {
+    toggleLoadingSpinner(true);
+    const searchField = document.getElementById('search-field');
+    const searchText = searchField.value;
+    loadPhone(searchText, isShowAll);
+}
+
+// handle show details
+const handleShowDetails = async (id) => {
+    console.log("click show details", id);
+
+    // load individual phone data
+    const res = await fetch(`https://openapi.programming-hero.com/api/phone/${id}`)
+    const data = await res.json();
+    console.log(data);
+}
+
+// toggle loader
+const toggleLoadingSpinner = (isLoading) => {
+    const loadingSpinner = document.getElementById('loading-spinner');
+    if (isLoading) {
+        loadingSpinner.classList.remove('hidden');
+    }
+    else {
+        loadingSpinner.classList.add('hidden');
+    }
+}
+
+// handle show all
+const handleShowAll = () => {
+    handleSearch(true);
 }
 
 // loadPhone();
